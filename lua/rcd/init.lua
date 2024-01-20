@@ -186,31 +186,14 @@ M.show = function()
   M.last_cursor = curr_cursor
 end
 
+M.hide = function()
+  vim.api.nvim_buf_clear_namespace(0, M.ns_id, 0, -1)
+end
+
 M.setup = function(opts)
   -- Parse user provided configuration
   M.config = vim.tbl_deep_extend("keep", opts or {}, M.default_config)
-
-  local au_rcd_group = vim.api.nvim_create_augroup("right_corner_diagnostics", {})
-  local show_autocmds = { "CursorMoved", "TextChangedI", "TextChanged" }
-
   M.ns_id = vim.api.nvim_create_namespace("rcd")
-
-  vim.api.nvim_create_autocmd(show_autocmds, {
-    group = au_rcd_group,
-    callback = function(opts)
-      -- Avoid re-render when the cursor just changed column in normal mode
-      if opts.event == "CursorMoved" and M.last_cursor then
-        local curr_cursor = vim.api.nvim_win_get_cursor(0)
-        if M.last_cursor[1] == curr_cursor[1] then
-          return
-        end
-      end
-
-      vim.schedule(M.show)
-    end,
-  })
-
-  print("hello rcd")
 end
 
 return M
